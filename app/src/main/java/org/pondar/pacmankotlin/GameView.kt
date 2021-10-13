@@ -9,17 +9,15 @@ import android.util.Log
 import android.view.View
 
 
-//note we now create our own view class that extends the built-in View class
+// Custom GameView class that extends inbuilt View
 class GameView : View {
-
     private lateinit var game: Game
-    private var h: Int = 0
-    private var w: Int = 0 //used for storing our height and width of the view
+    var h: Int = 0
+    var w: Int = 0 //used for storing our height and width of the view
 
     fun setGame(game: Game) {
         this.game = game
     }
-
 
     /* The next 3 constructors are needed for the Android view system,
 	when we have a custom view.
@@ -31,20 +29,22 @@ class GameView : View {
 
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
-    //In the onDraw we put all our code that should be
-    //drawn whenever we update the screen.
+    // Runs whenever the screen is updated
     override fun onDraw(canvas: Canvas) {
-        //Here we get the height and weight
+        // height and width
         h = height
         w = width
+
         //update the size for the canvas to the game.
         game.setSize(h, w)
         Log.d("GAMEVIEW", "h = $h, w = $w")
 
-        //are the coins initiazlied?
-        //if not initizlise them
+        // initialize enemies and coins if not initialized
         if (!(game.coinsInitialized))
             game.initializeGoldcoins()
+
+        if (!(game.enemiesInitialized))
+            game.initializeEnemies()
 
 
         //Making a new paint object
@@ -56,8 +56,14 @@ class GameView : View {
                 game.pacy.toFloat(), paint)
 
         for (cookie in game.coins)
-            canvas.drawBitmap(cookie.cookieBitmap, cookie.posx.toFloat(),
-                cookie.posy.toFloat(), paint)
+            if (!(cookie.taken))
+                canvas.drawBitmap(cookie.cookieBitmap, cookie.posx.toFloat(),
+                    cookie.posy.toFloat(), paint)
+
+        for (enemy in game.enemies)
+            if (enemy.alive)
+                canvas.drawBitmap(enemy.enemyBitmap, enemy.posx.toFloat(),
+                    enemy.posy.toFloat(), paint)
 
         game.doCollisionCheck()
         super.onDraw(canvas)
